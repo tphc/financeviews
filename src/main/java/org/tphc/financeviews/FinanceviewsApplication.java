@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @RepositoryRestResource(collectionResourceRel = "stockTs", path = "data")
 interface StockTsRepository extends PagingAndSortingRepository<StockTs, Long> {
     List<StockTs> findAllBy();
@@ -35,6 +35,7 @@ interface StockTsRepository extends PagingAndSortingRepository<StockTs, Long> {
     List<StockTs> findByStockTicker(@Param("ticker") String ticker);
 }
 
+@SuppressWarnings("unused")
 @RepositoryRestResource(collectionResourceRel = "stock", path = "stock")
 interface StockRepository extends PagingAndSortingRepository<Stock, Long> {
     List<Stock> findByName(@Param("name") String name);
@@ -46,6 +47,7 @@ interface StockRepository extends PagingAndSortingRepository<Stock, Long> {
 public class FinanceviewsApplication {
 
     private static final Logger log = LoggerFactory.getLogger(FinanceviewsApplication.class);
+
     private final StockTsRepository stockTsRepository;
     private final StockRepository stockRepository;
 
@@ -65,13 +67,7 @@ public class FinanceviewsApplication {
     @Bean
     public CommandLineRunner demo() {
         return (args) -> {
-//            final var c = new Company("Microsoft Corp.");
-//            final var c2 = new Company("Apple Inc.");
-//            companyRepository.saveAll(List.of(c, c2));
-//            stocks.add(new Stock(c, "MSFT", UUID.randomUUID().toString(), UUID.randomUUID().toString()));
-//            stocks.add(new Stock(c2, "AAPL", UUID.randomUUID().toString(), UUID.randomUUID().toString()));
-
-            JacksonJsonParser jacksonJsonParser = new JacksonJsonParser();
+            log.info("startdemo");
 
             ObjectMapper objectMapper = new ObjectMapper();
 
@@ -94,14 +90,8 @@ public class FinanceviewsApplication {
         return s;
     }
 
-    private Stock generateRandomStock() {
-        var s = new Stock(uid(), uid(), uid(), uid());
-        stockRepository.save(s);
-        return s;
-    }
 
-
-    private List<StockTs> generateRandomStockData(Stock stock) {
+    private void generateRandomStockData(Stock stock) {
         List<StockTs> stockTsList = new ArrayList<>();
         LocalDate dt = LocalDate.now();
         for (int i = 0; i < 100; i++) {
@@ -109,7 +99,6 @@ public class FinanceviewsApplication {
             stockTsList.add(generateStockTsValue(stock, dt));
         }
         stockTsRepository.saveAll(stockTsList);
-        return stockTsList;
     }
 
     private StockTs generateStockTsValue(Stock stock, LocalDate dt) {
