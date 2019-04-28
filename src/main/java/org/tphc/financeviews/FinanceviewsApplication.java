@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -20,6 +22,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -69,16 +72,19 @@ public class FinanceviewsApplication {
             log.info("startdemo");
 
             ObjectMapper objectMapper = new ObjectMapper();
-
-            List<CompDump> listCompDump = objectMapper.readValue(this.getClass().getClassLoader().getResourceAsStream("comp_small.json")
+            long start = System.nanoTime();
+            log.info("start parsing: " + start);
+            List<CompDump> listCompDump = objectMapper.readValue(this.getClass().getClassLoader().getResourceAsStream("comp.json")
                     , new TypeReference<List<CompDump>>() {
                     });
 
+            long parsed = System.nanoTime();
+            log.info("parsed in : " + (parsed -start)/ 1000000 + "ms");
+            log.info("start inserting: " + System.nanoTime());
             listCompDump.parallelStream().map(this::mapDumpToStock)
                     .forEach(this::generateRandomStockData);
+            log.info("inserted in : " + (System.nanoTime() -parsed)/ 1000000 + "ms");
 
-//            Stream.generate(this::generateRandomStock).limit(50)
-//                    .forEach(this::generateRandomStockData);
         };
 
     }
@@ -93,7 +99,7 @@ public class FinanceviewsApplication {
     private void generateRandomStockData(Stock stock) {
         List<StockTs> stockTsList = new ArrayList<>();
         LocalDate dt = LocalDate.now();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i <= 1000; i++) {
             dt = dt.plusDays(1);
             stockTsList.add(generateStockTsValue(stock, dt));
         }
@@ -123,9 +129,12 @@ class CompDump {
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
+
 class Stock {
+
     @Id
-    @GeneratedValue
+    @SequenceGenerator(name = "seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
     private long id;
 
     @NonNull
@@ -142,16 +151,26 @@ class Stock {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "stock")
     private List<StockTs> stockTs;
+
+    @Column
+    @CreationTimestamp
+    private LocalDateTime createDateTime;
+
+    @Column
+    @UpdateTimestamp
+    private LocalDateTime updateDateTime;
 }
 
 @Entity
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
+@SequenceGenerator(name = "seq")
 class StockTs {
 
     @Id
-    @GeneratedValue
+    @SequenceGenerator(name = "seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
     private long id;
 
     @NonNull
@@ -167,4 +186,12 @@ class StockTs {
 
     @NonNull
     private BigDecimal close;
+
+    @Column
+    @CreationTimestamp
+    private LocalDateTime createDateTime;
+
+    @Column
+    @UpdateTimestamp
+    private LocalDateTime updateDateTime;
 }
