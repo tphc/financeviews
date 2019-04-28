@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.util.ResourceUtils;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -71,7 +70,7 @@ public class FinanceviewsApplication {
 
             ObjectMapper objectMapper = new ObjectMapper();
 
-            List<CompDump> listCompDump = objectMapper.readValue(ResourceUtils.getFile("classpath:comp_small.json")
+            List<CompDump> listCompDump = objectMapper.readValue(this.getClass().getClassLoader().getResourceAsStream("comp_small.json")
                     , new TypeReference<List<CompDump>>() {
                     });
 
@@ -124,10 +123,9 @@ class CompDump {
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@SequenceGenerator(name = "seq", allocationSize = 100)
 class Stock {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @GeneratedValue
     private long id;
 
     @NonNull
@@ -150,11 +148,10 @@ class Stock {
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@SequenceGenerator(name = "seq", allocationSize = 100)
 class StockTs {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @GeneratedValue
     private long id;
 
     @NonNull

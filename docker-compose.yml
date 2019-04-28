@@ -1,0 +1,21 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    #    volumes:
+    #      - "./pgdata:/var/lib/postgresql/data/pgdata"
+    restart: always
+  #    volumes:
+  #      - dbvolume:$HOME/docker/volumes/postgres:/var/lib/postgresql/data
+  financeviews-docker:
+    build: .
+    image: tphc/financeviews-docker
+    ports:
+      - "8080:8080"
+    restart: always
